@@ -1,22 +1,22 @@
 SELECT 
-			*
+		*
 FROM 
-			CovidDeaths$
+		CovidDeaths$
 
 SELECT 
-			*
+		*
 FROM 
-			CovidVaccinations$
+		CovidVaccinations$
 ORDER BY 
-			3, 4;
+		3, 4;
 
 --SELECT USEFUL DATA
 SELECT 
-			CovidDeaths$.location, CovidDeaths$.date, CovidDeaths$.total_cases, CovidDeaths$.new_cases, 
-			CovidDeaths$.total_deaths, CovidDeaths$.population
+		CovidDeaths$.location, CovidDeaths$.date, CovidDeaths$.total_cases, CovidDeaths$.new_cases, 
+		CovidDeaths$.total_deaths, CovidDeaths$.population
 FROM		CovidProject..CovidDeaths$
 ORDER BY 
-			1, 2;
+		1, 2;
 
 --TOTAL CASES vs TOTAL DEATH
 --Shows the likelihood of dying if you get covid in your country
@@ -34,7 +34,7 @@ ORDER BY
 SELECT 
 		CovidDeaths$.location, CovidDeaths$.date, CovidDeaths$.population, CovidDeaths$.total_cases, 
 		(total_cases/population)*100 AS ContractedPercentage
-FROM	CovidProject..CovidDeaths$
+FROM		CovidProject..CovidDeaths$
 ORDER BY
 		1, 2;
 
@@ -71,7 +71,7 @@ WHERE
 		continent IS NOT NULL
 GROUP BY 
 		continent
-ORDER BY TotalDeathCount DESC;
+ORDER BY 	TotalDeathCount DESC;
 
 --GLOBAL NUMBERS
 SELECT 
@@ -82,7 +82,7 @@ FROM
 WHERE 
 		continent IS NOT NULL
 --GROUP BY date
-ORDER BY 1, 2;
+ORDER BY 	1, 2;
 
 --JOINING DEATHS & VACCINATED TABLE
 SELECT 
@@ -134,9 +134,9 @@ FROM
 		POPvsVAC
 
 
---SELECT		*
+--SELECT	*
 --FROM		CovidProject..CovidVaccinations$
---SELECT		location, SUM(population), SUM(cast(new_vaccinations as int))
+--SELECT	location, SUM(population), SUM(cast(new_vaccinations as int))
 --FROM		CovidProject..CovidDeaths$
 --GROUP BY	location
 --ORDER BY	population ASC;
@@ -154,52 +154,52 @@ CREATE TABLE #PercentPopulationVaccinated
 									)
 
 INSERT INTO #PercentPopulationVaccinated
-	SELECT 
-		dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-		SUM(CAST(vac.new_vaccinations AS INT)) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS NumVaccinatedPerLocal
-		-- SUM(CONVERT(INT,vac.new_vaccinations)) OVER (PARTITION BY dea.location) //This also convert to integers
-		--0,(NumVaccinatedPerLocal/Population)*100
+SELECT 
+	dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
+	SUM(CAST(vac.new_vaccinations AS INT)) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS NumVaccinatedPerLocal
+	-- SUM(CONVERT(INT,vac.new_vaccinations)) OVER (PARTITION BY dea.location) //This also convert to integers
+	--0,(NumVaccinatedPerLocal/Population)*100
 FROM 
-		CovidProject..CovidDeaths$ AS Dea
-		JOIN CovidProject..CovidVaccinations$ AS Vac
-			ON dea.location = Vac.location
-		AND dea.date = Vac.date
+	CovidProject..CovidDeaths$ AS Dea
+	JOIN CovidProject..CovidVaccinations$ AS Vac
+		ON dea.location = Vac.location
+	AND dea.date = Vac.date
 -- WHERE 
 		--dea.continent IS NOT NULL AND vac.new_vaccinations IS NOT NULL
 --ORDER BY 2, 3
 
 SELECT 
-		*, 
-		(NumVaccinatedPerLocal/Population)*100
+	*, 
+	(NumVaccinatedPerLocal/Population)*100
 FROM 
-		#PercentPopulationVaccinated
+	#PercentPopulationVaccinated
 
 
 --CREATING A VIEW
 -- PercentPopulationVaccinated
 CREATE VIEW  PercentPopulationVaccinated AS
-	SELECT 
-		dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
-		SUM(CAST(vac.new_vaccinations AS INT)) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS NumVaccinatedPerLocal
-		-- SUM(CONVERT(INT,vac.new_vaccinations)) OVER (PARTITION BY dea.location) //This also convert to integers
-		--0,(NumVaccinatedPerLocal/Population)*100
+SELECT 
+	dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations,
+	SUM(CAST(vac.new_vaccinations AS INT)) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS NumVaccinatedPerLocal
+	-- SUM(CONVERT(INT,vac.new_vaccinations)) OVER (PARTITION BY dea.location) //This also convert to integers
+	--0,(NumVaccinatedPerLocal/Population)*100
 FROM 
-		CovidProject..CovidDeaths$ AS Dea
-		JOIN CovidProject..CovidVaccinations$ AS Vac
-			ON dea.location = Vac.location
-		AND dea.date = Vac.date
+	CovidProject..CovidDeaths$ AS Dea
+	JOIN CovidProject..CovidVaccinations$ AS Vac
+		ON dea.location = Vac.location
+	AND dea.date = Vac.date
 WHERE 
-		dea.continent IS NOT NULL AND vac.new_vaccinations IS NOT NULL
+	dea.continent IS NOT NULL AND vac.new_vaccinations IS NOT NULL
 --ORDER BY 2, 3
 
 -- USEFUL DATA
 CREATE VIEW UseFulData AS 
 SELECT 
-			CovidDeaths$.location, CovidDeaths$.date, CovidDeaths$.total_cases, CovidDeaths$.new_cases, 
-			CovidDeaths$.total_deaths, CovidDeaths$.population
-FROM		CovidProject..CovidDeaths$
+	CovidDeaths$.location, CovidDeaths$.date, CovidDeaths$.total_cases, CovidDeaths$.new_cases, 
+	CovidDeaths$.total_deaths, CovidDeaths$.population
+FROM	CovidProject..CovidDeaths$
 -- ORDER BY 
-			--1, 2;
+	--1, 2;
 
 SELECT *
 FROM PercentPopulationVaccinated
