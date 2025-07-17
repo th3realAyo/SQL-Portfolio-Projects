@@ -287,6 +287,52 @@ FROM Sales.customers
 SELECT *
 FROM Sales.Employees
 
+---------------------------
+SELECT 
+	c.CustomerID,
+	c.FirstName,
+	c.LastName
+	
+FROM Sales.Customers AS c
+UNION ALL
+SELECT 
+	e.EmployeeID,
+	e.FirstName,
+	e.LastName
+FROM Sales.Employees AS e
+
+/* EXCEPT
+This returns unique value from the first query that are not in the second query
+The key table is the first one, the second table is to perform an extra filter or act as a lookup
+Note: The order of the table does affect the result, switching the table will result in 2 different output
+Task: Find the employees who are not customers at the same time
+*/
+
+SELECT 
+	FirstName,
+	LastName
+FROM Sales.Employees 
+EXCEPT
+SELECT 
+	FirstName,
+	LastName
+FROM Sales.Customers
+
+--Switching the tables
+SELECT 
+	FirstName,
+	LastName
+FROM Sales.Customers 
+EXCEPT
+SELECT 
+	FirstName,
+	LastName
+FROM Sales.Employees
+SELECT *
+FROM Sales.customers
+
+SELECT *
+FROM Sales.Employees
 
 
 
