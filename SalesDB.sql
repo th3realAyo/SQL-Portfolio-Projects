@@ -280,14 +280,8 @@ SELECT
 	e.LastName
 FROM Sales.Employees AS e
 
+-- GITHUB UPDATE 16/07/2025
 
-SELECT *
-FROM Sales.customers
-
-SELECT *
-FROM Sales.Employees
-
----------------------------
 SELECT 
 	c.CustomerID,
 	c.FirstName,
@@ -337,4 +331,289 @@ FROM Sales.Employees
 
 
 
+-- GITHUB UPDATE 24TH July 2025
 
+/* This query works well and fine just as the query below but it's unadvisable to write a 
+query like this because of future discrepancies incase of the additon of new column */
+
+--SELECT * 
+--FROM sales.Orders
+--UNION
+--SELECT *
+--FROM sales.OrdersArchive
+
+SELECT
+	'Orders' AS SourceTable --This adds an extra column on each rows signifying the source table of each result for ease identification.
+	,[OrderID]
+	,[ProductID]
+	,[CustomerID]
+	,[SalesPersonID]
+	,[OrderDate]
+	,[ShipDate]
+	,[OrderStatus]
+	,[ShipAddress]
+	,[BillAddress]
+	,[Quantity]
+	,[Sales]
+	,[CreationTime]
+FROM sales.Orders
+UNION 
+SELECT
+	'OrdersArchive' AS SourceTable
+	,[OrderID]
+	,[ProductID]
+	,[CustomerID]
+	,[SalesPersonID]
+	,[OrderDate]
+	,[ShipDate]
+	,[OrderStatus]
+	,[ShipAddress]
+	,[BillAddress]
+	,[Quantity]
+	,[Sales]
+	,[CreationTime]
+FROM sales.OrdersArchive
+ORDER BY OrderID ASC, SalesPersonID DESC;
+
+--DATA COMPLETENESS CHECK
+/*Use EXCEPT operator to perform a data check, the result MUST 
+be EMPTY even when tables are switched. This means the 2 tables are 100% the same */
+SELECT
+	'Orders' AS SourceTable
+	,[OrderID]
+	,[ProductID]
+	,[CustomerID]
+	,[SalesPersonID]
+	,[OrderDate]
+	,[ShipDate]
+	,[OrderStatus]
+	,[ShipAddress]
+	,[BillAddress]
+	,[Quantity]
+	,[Sales]
+	,[CreationTime]
+FROM sales.Orders
+EXCEPT 
+SELECT
+	'OrdersArchive' AS SourceTable
+	,[OrderID]
+	,[ProductID]
+	,[CustomerID]
+	,[SalesPersonID]
+	,[OrderDate]
+	,[ShipDate]
+	,[OrderStatus]
+	,[ShipAddress]
+	,[BillAddress]
+	,[Quantity]
+	,[Sales]
+	,[CreationTime]
+FROM sales.OrdersArchive
+ORDER BY OrderID ASC, SalesPersonID DESC;
+
+--ROW LEVEL FUNCTION
+--STRING FUNCTION
+-- FUNCTION GROUP: Single Row, Multiple Row Function
+/*	Single Row Function divided into 3 
+	- Manipulation (CONCACT, UPPER, LOWER, TRIM, REPLACE)
+	- Caculation (LEN)
+	- Extraction (LEFT, RIGHT, SUBSTRING)
+*/
+
+--MANIPULATION
+-- CONCAT: Combines multiple string together
+	SELECT CONCAT(FirstName,' ', LastName)
+	FROM SALES.Customers
+
+-- UPPER/LOWER: Change the case of a string
+	SELECT UPPER(firstname)
+	FROM sales.Customers;
+	
+	SELECT LOWER(lastname)
+	FROM sales.Customers;
+
+	SELECT CONCAT(UPPER(Firstname),' ', LOWER(lastname))
+	FROM sales.Customers;
+
+-- TRIM: Removes starting and trailing spaces in a string
+	SELECT FirstName,
+	LEN(lastname) len_name
+	--LEN(lastname) - LEN(TRIM(lastname)) flag	
+	FROM Sales.Customers
+	--WHERE (firstname) != TRIM(FirstName);
+
+--REPLACE: Replace the old value with a new update
+SELECT 
+	'123-45-7890',
+REPLACE ('123-45-7890', '-', '') newList;
+
+-- CALCULATION -- LEN()
+SELECT 
+	lastname lastname,
+	LEN(lastname) name_lenght
+FROM sales.Customers
+
+--DATA EXTRACTION --LEFT, RIGHT, SUBSTRING
+SELECT	firstname,
+		LEFT(firstname, 2)
+FROM Sales.Customers;
+
+SELECT	firstname,
+		RIGHT(firstname, 2)
+FROM Sales.Customers;
+
+SELECT SUBSTRING(firstname, 2,4) extracted_value
+FROM SALES.Customers;
+
+SELECT (SUBSTRING(TRIM(firstname), 2, LEN(firstname))) as ExtractedData
+FROM sales.Customers;
+
+--NUMBER FUNCTIONS
+--ROUND
+SELECT 
+	3.516,
+	ROUND(3.516, 2),
+	ROUND(3.516, 1),
+	ROUND(3.516, 0);	
+
+--DATE & TIME
+--SOURCES OF DATEVALUE
+--DATE COLUMN FROM A TABLE
+SELECT
+	orderID,
+	OrderDate,
+	ShipDate,
+	CreationTime
+FROM sales.Orders
+
+--HARDCODED DATE STRING
+SELECT '2020-08-24' Hardcoded;
+
+--GETDATE() FUNCTION
+SELECT 
+	OrderID,
+	CreationTime,
+	GETDATE() GetDateFunc 
+FROM Sales.Orders;
+
+--PART EXTRACTION
+--DAY/MONTH/YEAR
+SELECT 
+	CreationTime,
+	YEAR(CreationTime) Year,
+	MONTH(CreationTime) Month,
+	DAY(CreationTime) Day
+FROM Sales.orders
+
+--DATEPART, Extract a specific part in a date (qtr, week, numberofweek etc)
+--Result Format are all integers
+--Accepts 2 parameter, the part you want and the datecolumn
+
+SELECT
+	DATEPART(year, creationtime) yeardp,
+	DATEPART(month, CreationTime) monthdp,
+	DATEPART(day, CreationTime) daydp,
+	DATEPART(week, CreationTime) weekdp,
+	DATEPART(quarter, CreationTime) qtrdp,
+	DATEPART(hour, CreationTime) hour
+FROM Sales.Orders
+
+
+--DATENAME: Returns the name of the datepart
+--Result Format are all strings
+SELECT 
+	DATENAME(DAY, creationtime),
+	DATENAME(WEEKDAY, creationtime),
+	DATENAME(YEAR, creationtime),
+	DATENAME(WEEK, creationtime)
+FROM sales.Orders
+
+
+--DATETRUNC: Truncate or shorten the specified date
+SELECT DATETRUNC(MINUTE, creationtime)
+FROM sales.Orders
+
+--USE CASE: Calculates the total orders in each month
+/*The query below is wrong because everything is treated
+in it's own group aside the CREATIONTIME column
+--SELECT
+--	CreationTime,
+--	DATEPART(YEAR, CreationTime) as OrderYear,
+--	DATENAME(MONTH, CreationTime) as OrderMonth,
+--	DATETRUNC(MONTH, CreationTime) NumofOrder,
+--	COUNT(*)
+--FROM Sales.Orders
+--GROUP BY 
+--	DATETRUNC(MONTH, CreationTime),
+--	DATEPART(YEAR, CreationTime),
+--	DATENAME(MONTH, CreationTime),
+--	CreationTime
+*/
+
+SELECT
+    DATETRUNC(MONTH, CreationTime) AS MonthStart,
+    DATEPART(YEAR, CreationTime) AS OrderYear,
+    DATENAME(MONTH, CreationTime) AS OrderMonth,
+    COUNT(*) AS NumOfOrders
+FROM Sales.Orders
+GROUP BY 
+    DATETRUNC(MONTH, CreationTime),
+    DATEPART(YEAR, CreationTime),
+    DATENAME(MONTH, CreationTime)
+ORDER BY MonthStart;
+
+
+SELECT 
+	DATETRUNC(MONTH, CreationTime) Creation,
+	COUNT(*)
+FROM Sales.Orders
+GROUP  BY DATETRUNC(MONTH, CreationTime);
+
+
+--EOMONTH/END OF MONTH: Return the last day of the month
+--Accept just 1 parameter - datecolumn
+
+SELECT EOMONTH(CreationTime)
+FROM Sales.Orders
+
+--DATA AGGREGATION
+--TASK: How many orders were placed in each year
+
+SELECT 
+	DATEPART(YEAR, CreationTime) as dpYear,
+	COUNT(*) TotalOrders
+FROM Sales.Orders
+GROUP BY DATEPART(YEAR, CreationTime)
+
+--This works fine too and also prefered over the one above
+SELECT
+	YEAR(CreationTime) as OrderYear,
+	COUNT(*) TotalOrders
+FROM Sales.Orders
+GROUP BY YEAR(CreationTime)
+
+-- Show all orders that were placed during the month of february
+SELECT
+	*
+FROM Sales.Orders 
+WHERE MONTH(CreationTime) = 2;
+
+-- FORMAT AND CASTING
+SELECT
+	FORMAT(CreationTime, 'MM-dd-yyyy'),
+	FORMAT(CreationTime, 'dd'), -- 01
+	FORMAT(CreationTime, 'ddd'), -- Mon
+	FORMAT(CreationTime, 'dddd'), -- Monday
+	FORMAT(CreationTime, 'MM'), -- 01
+	FORMAT(CreationTime, 'MMM'), -- Jan
+	FORMAT(CreationTime, 'MMMM') -- January
+FROM sales.Orders
+
+SELECT
+	OrderID,
+	CreationTime,
+	'Day ' + 
+	FORMAT(CreationTime, 'ddd MMM') +
+	' Q' + DATENAME(quarter, CreationTime) + ' ' +
+	FORMAT(CreationTime, 'yyyy hh:mm:ss tt') AS CustomeFormat 
+FROM Sales.orders;
